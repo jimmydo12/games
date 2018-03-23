@@ -1,0 +1,213 @@
+# it starts the python game code, code the bottom
+import pygame
+import numpy as np
+
+# Define some colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+YELLOW = (255, 255, 0)
+BLUE = (0, 0, 255)
+PURPLE = (136, 5, 153)
+
+# it Define the score left paddle and right paddle
+L_score = 0
+R_score = 0
+
+# it pop ups the screen
+pygame.init()
+
+# it define the music
+pygame.mixer.init()
+
+# It initiate music and start playing and -1 music play continued forever for the background
+Music = pygame.mixer.music.load("H:\\Python music and wallpaper background ping pong game\\'Infinite' Ambient Mix.mp3")
+Bounce = pygame.mixer.Sound("H:\\Python music and wallpaper background ping pong game\\Western Ricochet-SoundBible.com-1725886901.wav")
+# play music
+pygame.mixer.music.play(-1)
+
+# Set the height and width of the screen
+size = [700, 500]
+screen = pygame.display.set_mode(size)
+
+# # set the background python game images
+background1 = pygame.image.load("H:\Python music and wallpaper background ping pong game\ping pong background image.jpg")
+background = pygame.transform.scale( background1, (550, 500))
+
+# display the title of python game
+pygame.display.set_caption("Bouncing Ball ping pong game")
+
+# write on the scoring board
+# define the font
+font_name = pygame.font.match_font('arial')
+
+# define the function to write on the scoring board
+def draw_text( surf,text, color,size, x, y):
+        font = pygame.font.Font(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        surf.blit(text_surface,text_rect)
+
+# define a function to control the volume
+def volume(x):
+    intensity =np.round((x- 550)/100,1)
+    print(intensity)
+    pygame.mixer.music.set_volume(intensity)
+    return intensity
+
+# Loop until the user clicks the close button.
+done = False
+
+# Used to manage how fast the screen updates
+clock = pygame.time.Clock()
+
+# Starting position of the circle
+circle_x = 50
+circle_y = 50
+
+# Starting position of the paddle 1
+rect_x = 10
+paddle1_y = 200
+pallet1_y_change = 0
+
+# Starting position of the paddle 2
+rect2_x = 480
+paddle2_y = 200
+paddle2_y_change = 0
+
+# Speed and direction of circle
+circle_change_x = 5
+circle_change_y = 5
+
+# Speed and direction of paddle 1
+rect_change_y = 0
+
+# Speed and direction of paddle 2
+rect2_change_y = 0
+
+# Volume
+vol_x = 550
+vol_x_change = 0
+intensity = 0
+
+# -------- Main Program Loop -----------
+while not done:
+    # --- Event Processing
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+
+            # this is paddle 1 left
+            # if the event.type is KeyDown check which keys
+            # are used for moving the paddle
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                pallet1_y_change = -6
+            if event.key == pygame.K_DOWN:
+                pallet1_y_change = 6
+
+            # Volume controls and changes
+            if event.key == pygame.K_o:
+                vol_x_change = -1
+                volume(vol_x)
+
+            if event.key == pygame.K_p:
+                vol_x_change = 1
+                volume(vol_x)
+            print(vol_x)
+
+            # this is paddle 2 on right
+            if event.key == pygame.K_w:
+                paddle2_y_change = -6
+            if event.key == pygame.K_s:
+                paddle2_y_change = 6
+                # if event.type is Key up put the conditions for
+                # the corresponding keys which are not pressed any longer
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                pallet1_y_change = 0
+            if event.key == pygame.K_w or event.key == pygame.K_s:
+                paddle2_y_change = 0
+
+    # --- Logic
+
+    # Move the circle starting point
+    circle_x += circle_change_x
+    circle_y += circle_change_y
+
+    # Move the paddle 1 starting point
+    paddle1_y += pallet1_y_change
+
+    # Move the paddle 2 starting point
+    paddle2_y += paddle2_y_change
+
+    # Bounce the ball if needed
+    if circle_y > 490 or circle_y < 0:
+        circle_change_y = circle_change_y * -1
+        pygame.mixer.Sound.play(Bounce)
+    if circle_x > 480 or circle_x < 20:
+        circle_change_x = circle_change_x * -1
+        pygame.mixer.Sound.play(Bounce)
+
+        # Bounce the paddle 1
+    if paddle1_y > 480 or paddle1_y < 200:
+        rect_change_y = rect_change_y * -1
+
+    # Bounce the paddle 2
+    if paddle2_y > 480 or paddle2_y < 200:
+        rect2_change_y = rect2_change_y * -1
+
+    # Volume motion
+    vol_x += vol_x_change
+
+    # your downloaded images make the background your image
+    # set the screen background to see the image
+    screen.blit(background, (0, 0))
+
+    # makes the screen Blue background and draw rectangle purple on the right side
+    # screen.fill(BLUE)
+    pygame.draw.rect(screen, BLACK, [500, 0, 200, 500])
+
+# Draw the circle
+    ball = pygame.draw.circle(screen, YELLOW, (circle_x, circle_y), 20)
+
+    # draw score board
+    if circle_x < 20:
+        R_score += 1
+    if circle_x > 480:
+        L_score += 1
+
+    # Draw the paddle 1
+    paddle1 = pygame.draw.rect(screen, GREEN, [0,paddle1_y , 30, 100])
+
+    # Draw the paddle 2
+    paddle2 = pygame.draw.rect(screen, RED, [470, paddle2_y, 30, 100])
+
+    # it bounce the paddle to not score point only off screen
+    if ball.colliderect(paddle1) or ball.colliderect(paddle2):
+        circle_change_x = circle_change_x * -1
+        pygame.mixer.Sound.play(Bounce)
+
+    # draw score
+    draw_text(screen, "Right Player" + " "+ str(R_score), GREEN, 20, 600, 200)
+    draw_text(screen, "Left Player" + " "+ str(L_score), RED, 20, 600, 300)
+
+    # conditions for volume button
+    if vol_x< 550 or vol_x > 650:
+        vol_x_change = 0
+
+    # volume drawn rectangle
+    pygame.draw.rect(screen, PURPLE, [550, 100, 110, 30])
+    volume_button = pygame.draw.rect(screen, GREEN,[vol_x, 100, 10, 30])
+
+    # --- Wrap-up
+    # Limit to 60 frames per second
+    clock.tick(60)
+
+    # Go ahead and update the screen with what we've drawn.
+    pygame.display.flip()
+
+# Close everything down
+pygame.quit()
